@@ -54,6 +54,44 @@ CreateGUI() {
     mainGui.Add("Text", "x10 y+15", "快捷键组合提示Ctrl = ^ Alt = ! Shift = + win = #  example: Shift+Alt+F = +!f ")
 
     mainGui.Show()
+    
+    ; 创建托盘菜单
+    CreateTrayMenu()
+}
+
+; ==============================
+; 创建托盘菜单
+; ==============================
+CreateTrayMenu() {
+    global mainGui
+    
+    ; 清除现有菜单
+    A_TrayMenu.Delete()
+    
+    ; 添加菜单项
+    A_TrayMenu.Add("显示本工具", ShowWindowFromTray)
+    A_TrayMenu.Add("退出", ExitHideGui)
+
+}
+
+; ==============================
+; 从托盘显示窗口
+; ==============================
+ShowWindowFromTray(*) {
+    global mainGui
+    
+    if mainGui {
+        mainGui.Show()
+        mainGui.Restore()
+        WinActivate(mainGui.Hwnd)
+    }
+}
+
+; ==============================
+; 退出程序
+; ==============================
+ExitHideGui(*) {
+    ExitApp()
 }
 
 ; ==============================
@@ -122,13 +160,11 @@ GetSelectedWindows() {
     row := 0
 
     while (row := listView.GetNext(row)) {
-        title := listView.GetText(row, 2)
-        exe := listView.GetText(row, 1)
-
+        exe := listView.GetText(row, 1)  ; 只获取进程名
+        
+        ; 简单直接：获取该进程的所有窗口
         for hwnd in WinGetList("ahk_exe " exe) {
-            if (WinGetTitle("ahk_id " hwnd) = title) {
-                selected.Push(hwnd)
-            }
+            selected.Push(hwnd)  ; 添加所有窗口，不需要标题匹配
         }
     }
 
