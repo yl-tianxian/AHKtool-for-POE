@@ -182,8 +182,8 @@ clickerEnableCB.OnEvent("Click", ToggleClicker)
 
 ; 默认启用鼠标连点功能
 clickerEnabled := true
-Hotkey "~RButton", StartClicker, "On"
-Hotkey "~RButton Up", StopClicker, "On"
+Hotkey "~*RButton", StartClicker, "On"
+Hotkey "~*RButton Up", StopClicker, "On"
 
 ; 连点按键选择下拉框
 mainGui.AddText("x20 y640", "连点鼠标：")
@@ -510,12 +510,13 @@ ToggleClicker(*) {
     if (clickerEnabled) {
         ; 启用热键：监听右键按下和松开
         ; 使用 ~ 前缀让系统也能收到右键事件（不拦截）
-        Hotkey "~RButton", StartClicker, "On"
-        Hotkey "~RButton Up", StopClicker, "On"
+        ; 使用 * 通配符让热键在按住修饰键时也能触发
+        Hotkey "~*RButton", StartClicker, "On"
+        Hotkey "~*RButton Up", StopClicker, "On"
     } else {
         ; 禁用热键
-        Hotkey "~RButton", StartClicker, "Off"
-        Hotkey "~RButton Up", StopClicker, "Off"
+        Hotkey "~*RButton", StartClicker, "Off"
+        Hotkey "~*RButton Up", StopClicker, "Off"
         ; 确保停止连点
         StopClicker()
     }
@@ -566,12 +567,11 @@ DoClick() {
         return
     }
     
-    ; 使用 SendPlay 发送点击，避免被AHK捕获
-    ; SendPlay 使用更底层的输入方式，不会被当前脚本的热键拦截
+    ; 使用 SendInput 发送点击，避免UAC导致的SendPlay失效问题
     ; 通过映射获取英文按键名
     uiText := clickerDDL.Text
     clickerButton := clickerButtonMap.Has(uiText) ? clickerButtonMap[uiText] : "LButton"
-    SendPlay "{" clickerButton "}"
+    SendInput "{" clickerButton "}"
     
     ; 设置下一次点击的随机间隔（80-120ms，基础100ms ±20ms）
     ; 随机间隔可以避免被游戏检测为固定频率的脚本点击
