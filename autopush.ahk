@@ -97,88 +97,58 @@ hotkeyList := [
 mainGui := Gui("", "多功能按键.by：tianxian")
 mainGui.SetFont("s10", "Microsoft YaHei")
 
-; -------- 快捷键设置 --------
-mainGui.AddGroupBox("w420 h80", "快捷键设置（仅对循环按键生效）")
-mainGui.AddText("x20 y30", "启动/停止快捷键：")
-hotkeyDDL := mainGui.AddDropDownList("x160 y28 w100", hotkeyList)
+; -------- 状态显示（最上面） --------
+statusText := mainGui.AddText("x20 y10 w400", "状态：未启动")
+
+; =========================
+; 模块1：循环按键（包含启动/停止快捷键）
+; =========================
+mainGui.AddGroupBox("x10 y40 w420 h180")  ; 无标题，用Text模拟
+mainGui.SetFont("s12 bold", "Microsoft YaHei")
+mainGui.AddText("x20 y35 c0078D7", " 循环按键 ")
+mainGui.SetFont("s10 norm", "Microsoft YaHei")
+
+; 启动/停止快捷键（放在循环按键框内）
+mainGui.AddText("x20 y65", "启动/停止快捷键：")
+hotkeyDDL := mainGui.AddDropDownList("x160 y63 w100", hotkeyList)
 hotkeyDDL.Value := 2 ; 默认 F5
-setHotkeyBtn := mainGui.AddButton("x280 y28 w100", "应用快捷键")
+setHotkeyBtn := mainGui.AddButton("x280 y60 w100", "应用快捷键")
 setHotkeyBtn.OnEvent("Click", SetHotkey)
 
-; -------- 状态显示 --------
-statusText := mainGui.AddText("x20 y95 w400", "状态：未启动")
-
-; -------- 窗口选择 --------
-mainGui.AddGroupBox("x10 y120 w420 h200", "目标窗口（默认在流放之路窗口生效，留空=所有窗口）")
-windowEdit := mainGui.AddEdit("x20 y145 w300", "流放之路")
-windowEdit.OnEvent("Change", UpdateTargetWindow)
-refreshWinBtn := mainGui.AddButton("x330 y145 w90", "刷新列表")
-refreshWinBtn.OnEvent("Click", RefreshWindowList)
-windowList := mainGui.AddListView("x20 y175 w400 h130", ["窗口标题", "进程名"])
-windowList.ModifyCol(1, 250)
-windowList.ModifyCol(2, 130)
-windowList.OnEvent("DoubleClick", SelectWindow)
-
-; =========================
-; 按键区域 - 使用统一布局
-; =========================
-mainGui.AddGroupBox("x10 y330 w420 h140", "循环按键（选择技能或者酊剂按键，按上面快捷键启用停止）")
-
 ; -------- 按键1 --------
-mainGui.AddText("x20 y355 w60", "按键1：")
-ddl1 := mainGui.AddDropDownList("x80 y353 w100", keyList)
-mainGui.AddText("x190 y355", "间隔")
-int1 := mainGui.AddEdit("x230 y353 w60 Number", "1000")  ; Number选项限制只能输入数字
-mainGui.AddText("x295 y355", "毫秒")
+mainGui.AddText("x20 y100 w60", "按键1：")
+ddl1 := mainGui.AddDropDownList("x80 y98 w100", keyList)
+mainGui.AddText("x190 y100", "间隔")
+int1 := mainGui.AddEdit("x230 y98 w60 Number", "1000")
+mainGui.AddText("x295 y100", "毫秒")
 
 ; -------- 按键2 --------
-mainGui.AddText("x20 y395 w60", "按键2：")
-ddl2a := mainGui.AddDropDownList("x80 y393 w100", keyList)
-mainGui.AddText("x190 y395", "间隔")
-int2 := mainGui.AddEdit("x230 y393 w60 Number", "1000")  ; Number选项限制只能输入数字
-mainGui.AddText("x295 y395", "毫秒")
+mainGui.AddText("x20 y135 w60", "按键2：")
+ddl2a := mainGui.AddDropDownList("x80 y133 w100", keyList)
+mainGui.AddText("x190 y135", "间隔")
+int2 := mainGui.AddEdit("x230 y133 w60 Number", "1000")
+mainGui.AddText("x295 y135", "毫秒")
+mainGui.AddButton("x350 y130 w70", "清空按键").OnEvent("Click", ClearKeyDDLs)
 
 ; -------- 按键3 --------
-mainGui.AddText("x20 y435 w60", "按键3：")
-ddl3a := mainGui.AddDropDownList("x80 y433 w100", keyList)
-mainGui.AddText("x190 y435", "间隔")
-int3 := mainGui.AddEdit("x230 y433 w60 Number", "1000")  ; Number选项限制只能输入数字
-mainGui.AddText("x295 y435", "毫秒")
+mainGui.AddText("x20 y170 w60", "按键3：")
+ddl3a := mainGui.AddDropDownList("x80 y168 w100", keyList)
+mainGui.AddText("x190 y170", "间隔")
+int3 := mainGui.AddEdit("x230 y168 w60 Number", "1000")
+mainGui.AddText("x295 y170", "毫秒")
 
-; 提示文字
-mainGui.AddText("x20 y310 w400 cff4343", "提示：如需其他窗口生效，请在列表选择对应窗口双击")
-
-; =========================
-; 模块1：一键喝药功能
-; =========================
-; 功能说明：按下`键（反引号）时，同时发送选中的数字键（1-5）
-; 适用于需要快速使用多个物品栏位的游戏场景
-mainGui.AddGroupBox("x10 y480 w420 h100", "一键喝药（按 ~ 键触发）")
-
-; 功能启用复选框
-potionEnableCB := mainGui.AddCheckbox("x20 y505 vPotionEnabled", "启用一键喝药")
-potionEnableCB.OnEvent("Click", TogglePotion)
-
-; 五个数字键的复选框，横向排列
-mainGui.AddText("x20 y530", "选择药剂：")
-cbPotion1 := mainGui.AddCheckbox("x100 y530 Checked", "药1")
-cbPotion2 := mainGui.AddCheckbox("x160 y530 Checked", "药2")
-cbPotion3 := mainGui.AddCheckbox("x220 y530 Checked", "药3")
-cbPotion4 := mainGui.AddCheckbox("x280 y530 Checked", "药4")
-cbPotion5 := mainGui.AddCheckbox("x340 y530 Checked", "药5")
-
-; 保存复选框引用到全局变量，方便后续读取状态
-global cbPotion1, cbPotion2, cbPotion3, cbPotion4, cbPotion5
+mainGui.AddText("x20 y195 cGray", "提示：选择技能或者酊剂按键，按快捷键启用/停止")
 
 ; =========================
 ; 模块2：鼠标连点功能
 ; =========================
-; 功能说明：按住鼠标右键(RButton)不放，以100ms间隔自动连点左键或右键
-; 注意：使用SendPlay发送点击，避免被AHK自身捕获形成递归
-mainGui.AddGroupBox("x10 y590 w420 h100", "鼠标连点（按住右键触发）")
+mainGui.AddGroupBox("x10 y230 w420 h100")  ; 无标题，用Text模拟
+mainGui.SetFont("s12 bold", "Microsoft YaHei")
+mainGui.AddText("x20 y225 c0078D7", " 鼠标连点 ")
+mainGui.SetFont("s10 norm", "Microsoft YaHei")
 
 ; 功能启用复选框（默认启用）
-clickerEnableCB := mainGui.AddCheckbox("x20 y615 vClickerEnabled Checked", "启用鼠标连点")
+clickerEnableCB := mainGui.AddCheckbox("x20 y255 vClickerEnabled Checked", "启用鼠标连点")
 clickerEnableCB.OnEvent("Click", ToggleClicker)
 
 ; 默认启用鼠标连点功能
@@ -187,20 +157,105 @@ Hotkey "~*RButton", StartClicker, "On"
 Hotkey "~*RButton Up", StopClicker, "On"
 
 ; 连点按键选择下拉框
-mainGui.AddText("x20 y640", "连点鼠标：")
-; UI显示中文，但内部映射到英文按键名
-clickerDDL := mainGui.AddDropDownList("x90 y638 w80", ["左键", "右键"])
+mainGui.AddText("x20 y280", "连点鼠标：")
+clickerDDL := mainGui.AddDropDownList("x90 y278 w80", ["左键", "右键"])
 clickerDDL.Value := 1  ; 默认选择左键
 global clickerDDL
-; 创建UI文本到按键名的映射
 clickerButtonMap := Map("左键", "LButton", "右键", "RButton")
 
-mainGui.AddText("x180 y640", "间隔：80-120毫秒（随机）")
+mainGui.AddText("x180 y280", "间隔：80-120毫秒（随机）")
 
-; 提示：使用SendPlay避免递归捕获
-mainGui.AddText("x20 y660 w380 cGray", "提示：默认鼠标左键，右键按住不放时生效，松开右键停止连点")
+; 提示：使用MouseClick 避免递归捕获
+mainGui.AddText("x20 y305 w380 cGray", "提示：默认鼠标左键，右键按住不放时生效，松开右键停止连点")
 
-mainGui.Show("w440 h710")
+; =========================
+; 模块3：一键喝药功能
+; =========================
+mainGui.AddGroupBox("x10 y340 w420 h100")  ; 无标题，用Text模拟
+mainGui.SetFont("s12 bold", "Microsoft YaHei")
+mainGui.AddText("x20 y335 c0078D7", " 一键喝药 ")
+mainGui.SetFont("s10 norm", "Microsoft YaHei")
+
+; 功能启用复选框
+potionEnableCB := mainGui.AddCheckbox("x20 y365 vPotionEnabled", "启用一键喝药")
+potionEnableCB.OnEvent("Click", TogglePotion)
+
+; 五个数字键的复选框，横向排列
+mainGui.AddText("x20 y390", "选择药剂：")
+cbPotion1 := mainGui.AddCheckbox("x100 y390 Checked", "药1")
+cbPotion2 := mainGui.AddCheckbox("x160 y390 Checked", "药2")
+cbPotion3 := mainGui.AddCheckbox("x220 y390 Checked", "药3")
+cbPotion4 := mainGui.AddCheckbox("x280 y390 Checked", "药4")
+cbPotion5 := mainGui.AddCheckbox("x340 y390 Checked", "药5")
+
+mainGui.AddText("x20 y415 cGray", "提示：勾选的药剂生效，按 ~ 键喝")
+; 保存复选框引用到全局变量
+global cbPotion1, cbPotion2, cbPotion3, cbPotion4, cbPotion5
+
+; =========================
+; 模块4：目标窗口设置（最下面）
+; =========================
+mainGui.AddGroupBox("x10 y450 w420 h200")  ; 无标题，用Text模拟
+mainGui.SetFont("s12 bold", "Microsoft YaHei")
+mainGui.AddText("x20 y445 c0078D7", " 目标窗口 ")
+mainGui.SetFont("s10 norm", "Microsoft YaHei")
+windowEdit := mainGui.AddEdit("x20 y475 w300", "流放之路")
+windowEdit.OnEvent("Change", UpdateTargetWindow)
+refreshWinBtn := mainGui.AddButton("x330 y475 w90", "刷新列表")
+refreshWinBtn.OnEvent("Click", RefreshWindowList)
+windowList := mainGui.AddListView("x20 y505 w400 h130", ["窗口标题", "进程名"])
+windowList.ModifyCol(1, 250)
+windowList.ModifyCol(2, 130)
+windowList.OnEvent("DoubleClick", SelectWindow)
+
+; 提示文字
+mainGui.AddText("x20 y640 w400 cGray", "提示：默认在国服流放窗口生效，如需国际服或其他窗口生效，请在列表选择对应窗口双击，留空=所有窗口生效")
+
+
+mainGui.Show("w440 h700")
+
+; =========================
+; 托盘菜单与窗口关闭行为
+; =========================
+
+; 创建托盘菜单
+A_TrayMenu.Delete()  ; 清空默认菜单项
+A_TrayMenu.Add("重置脚本", ReloadScript)
+A_TrayMenu.Add()     ; 分隔线
+A_TrayMenu.Add("退出", ExitScript)
+
+; 设置托盘图标双击事件：显示窗口
+OnMessage(0x404, WM_USER)  ; AHK 托盘回调消息
+
+WM_USER(wParam, lParam, msg, hwnd) {
+    if (lParam = 0x203) {  ; WM_LBUTTONDBLCLK = 双击左键
+        mainGui.Show()
+        WinActivate(mainGui.Hwnd)
+    }
+}
+
+; 注册 GUI Close 回调：点击 X 时隐藏到托盘而不是关闭
+mainGui.OnEvent("Close", GuiHideToTray)
+
+GuiHideToTray(*) {
+    mainGui.Hide()
+}
+
+ReloadScript(*) {
+    Reload
+}
+
+ExitScript(*) {
+    ExitApp
+}
+
+; 清空按键下拉框
+ClearKeyDDLs(*) {
+    global ddl1, ddl2a, ddl3a
+    ddl1.Text := ""
+    ddl2a.Text := ""
+    ddl3a.Text := ""
+}
 
 ; 初始化窗口列表
 RefreshWindowList()
@@ -427,12 +482,12 @@ UpdateStatus() {
 
     ; 循环按键整体状态
     loopRunning := running1 || running2 || running3
-    txt .= loopRunning ? "[循环按键运行中] " : "[循环按键停止] "
-    txt .= potionEnabled ? "[喝药开] " : "[喝药关] "
-    txt .= clickerEnabled ? (clickerRunning ? "[连点中]" : "[连点开]") : "[连点关]"
-    
+    txt .= loopRunning ? " 循环按键运行中 " : " 循环按键停止 "
+    txt .= potionEnabled ? " 喝药开 " : " 喝药关 "
+    txt .= clickerEnabled ? (clickerRunning ? " 连点中 " : " 连点开 ") : " 连点关 "
+
     if (targetWindow != "")
-        txt .= " | 目标: " targetWindow
+        txt .= " | 生效窗口: " targetWindow
 
     statusText.Value := txt
 }
