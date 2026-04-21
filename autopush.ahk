@@ -45,6 +45,7 @@ global clickerEnabled := false     ; 功能是否启用
 global clickerButton := "LButton"  ; 默认连点左键（LButton或RButton）
 global clickerRunning := false     ; 连点是否正在运行
 global clickerInterval := 100      ; 连点间隔100毫秒
+global clickerStartTime := 0       ; 记录右键按下的时间，用于防止快速点击误触发
 
 ; =========================
 ; 可选键列表（AHK v2 支持的所有按键）
@@ -525,11 +526,14 @@ ToggleClicker(*) {
 }
 
 StartClicker(*) {
-    global clickerRunning, clickerInterval, clickerDDL
+    global clickerRunning, clickerInterval, clickerDDL, clickerStartTime
     
     ; 检查是否在目标窗口内
     if !IsTargetWindowActive()
         return
+    
+    ; 记录按下时间
+    clickerStartTime := A_TickCount
     
     ; 获取选中的连点按键
     clickerButton := clickerDDL.Text
@@ -538,11 +542,30 @@ StartClicker(*) {
     clickerRunning := true
     SetTimer DoClick, clickerInterval
     
+    ; 调试日志（需要时取消注释）
+    ; ToolTip "右键按下，时间: " clickerStartTime
+    
     UpdateStatus()
 }
 
 StopClicker(*) {
-    global clickerRunning
+    global clickerRunning, clickerStartTime
+    
+    ; 计算按住时间
+    holdTime := A_TickCount - clickerStartTime
+    
+    ; 调试日志（需要时取消注释）
+    ; ToolTip "右键松开，按住时间: " holdTime "ms"
+    
+    ; 检查按住时间，如果小于200ms认为是快速点击，不触发连点
+    ; 这样可以防止快速点按右键时误触发连点
+    if (holdTime < 200 && clickerRunning) {
+        ; 按住时间太短，立即停止并取消本次连点
+        clickerRunning := false
+        SetTimer DoClick, 0
+        UpdateStatus()
+        return
+    }
     
     ; 停止连点定时器
     clickerRunning := false
@@ -567,11 +590,16 @@ DoClick() {
         return
     }
     
-    ; 使用 SendInput 发送点击，避免UAC导致的SendPlay失效问题
     ; 通过映射获取英文按键名
     uiText := clickerDDL.Text
     clickerButton := clickerButtonMap.Has(uiText) ? clickerButtonMap[uiText] : "LButton"
-    SendInput "{" clickerButton "}"
+    
+    ; 使用 MouseClick 发送点击，不受修饰键影响
+    ; 注意：连点右键时，发送的右键不会触发 StartClicker 因为通配符热键只响应物理按键
+    if (clickerButton = "LButton")
+        MouseClick "Left"
+    else if (clickerButton = "RButton")
+        MouseClick "Right"
     
     ; 设置下一次点击的随机间隔（80-120ms，基础100ms ±20ms）
     ; 随机间隔可以避免被游戏检测为固定频率的脚本点击
