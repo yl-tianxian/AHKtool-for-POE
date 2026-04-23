@@ -1,17 +1,30 @@
 #Requires AutoHotkey v2.0
 
+; 调试重启用，编译前注释掉！！！！！！！
+F5:: {
+    Sleep 50
+    Reload()
+}
 ; 配置文件路径
 CfgFile := A_ScriptDir "\AutoCurrency_config.ini"
 
 ; --- GUI 界面 ---
 
-; 模块2变量
-global ModCheck1 := 0, ModCheck2 := 0, ModCheck3 := 0, ModCheck4 := 0, ModCheck5 := 0, ModCheck6 := 0
-global NeedsModifiers1 := "", NeedsModifiers2 := "", NeedsModifiers3 := "", NeedsModifiers4 := "", NeedsModifiers5 := "", NeedsModifiers6 := ""
+; 模块1变量
+global PrefixCheck1 := 0, PrefixCheck2 := 0, PrefixCheck3 := 0, PrefixCheck4 := 0
+global NeedsPrefix1 := "", NeedsPrefix2 := "", NeedsPrefix3 := "", NeedsPrefix4 := ""
+
+global SuffixCheck1 := 0, SuffixCheck2 := 0, SuffixCheck3 := 0, SuffixCheck4 := 0
+global NeedsSuffix1 := "", NeedsSuffix2 := "", NeedsSuffix3 := "", NeedsSuffix4 := ""
 
 ; 模块2变量
 global ModCheck1 := 0, ModCheck2 := 0, ModCheck3 := 0, ModCheck4 := 0, ModCheck5 := 0, ModCheck6 := 0
 global NeedsModifiers1 := "", NeedsModifiers2 := "", NeedsModifiers3 := "", NeedsModifiers4 := "", NeedsModifiers5 := "", NeedsModifiers6 := ""
+
+; 模块3变量
+global MustNeed1 := "", MustNeed2 := ""
+global NeedsModifiersjh1 := "", NeedsModifiersjh2 := "", NeedsModifiersjh3 := "", NeedsModifiersjh4 := ""
+
 
 ; 通货余额变量
 global CountTuibian := 0, CountGaizao := 0, CountFuhao := 0, CountChonggao := 0
@@ -26,39 +39,56 @@ MyGui.MarginX := 15
 MyGui.MarginY := 10
 
 ; ========== 模块1: 改造-增幅-富豪-崇高 ==========
-MyGui.Add("GroupBox", "x15 y5 w410 h290", "改造-增幅-富豪-崇高")
+MyGui.Add("GroupBox", "x15 y5 w410 h370", "改造-增幅-富豪-崇高")
 
 ; Prefix 标签和输入框（带复选框）
 MyGui.Add("Text", "x35 y30 w80 h20", "前缀:")
-yPos := 55
-loop 3 {
+yPos := 60
+loop 4 {
     MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vPrefixCheck" A_Index, "")
-    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsPrefix" A_Index, "")
+    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsPrefix" A_Index, NeedsPrefix%A_Index%)
     yPos += 30
 }
 
 ; Suffix 标签和输入框（带复选框）
-MyGui.Add("Text", "x35 y150 w80 h20", "后缀:")
-yPos := 175
-loop 3 {
+MyGui.Add("Text", "x35 y190 w80 h20", "后缀:")
+yPos := 220
+loop 4 {
     MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vSuffixCheck" A_Index, "")
-    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsSuffix" A_Index, "")
+    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsSuffix" A_Index, NeedsSuffix%A_Index%)
     yPos += 30
 }
 
 ; ========== 模块2: 改造模式 ==========
-MyGui.Add("GroupBox", "x15 y305 w410 h250", "改造模式")
+MyGui.Add("GroupBox", "x15 y385 w205 h250", "改造模式")
 
 ; 6个带复选框的输入框
-yPos := 335
+yPos := 415
 loop 6 {
-    MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vModCheck" A_Index, "")
-    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsModifiers" A_Index, NeedsModifiers%A_Index%)
+    MyGui.Add("CheckBox", "x25 y" yPos " w18 h22 vModCheck" A_Index, "")
+    MyGui.Add("Edit", "x50 y" yPos " w160 h26 vNeedsModifiers" A_Index, NeedsModifiers%A_Index%)
     yPos += 30
 }
 
-; ========== 模块3: 通货余额 ==========
-MyGui.Add("GroupBox", "x15 y575 w410 h140", "通货余额")
+; ========== 模块3: 精华or庄园 ==========
+MyGui.Add("GroupBox", "x220 y385 w205 h250", "庄园")
+
+MyGui.AddText("x225 y425", "必要`n词缀:")
+MyGui.AddEdit("x260 y415 w140 h26 vMustNeed1", MustNeed1)
+MyGui.AddEdit("x260 y445 w140 h26 vMustNeed2", MustNeed2)
+
+
+; 4个带复选框的输入框 
+MyGui.AddText("x225 y479 w80 h20", "次要词缀:")
+yPos := 505
+loop 4 {
+
+    MyGui.Add("Edit", "x260 y" yPos " w140 h26 vNeedsModifiersjh" A_Index, NeedsModifiersjh%A_Index%)
+    yPos += 30
+}
+
+; ========== 模块4: 通货余额 ==========
+MyGui.Add("GroupBox", "x15 y640 w410 h85", "通货余额")
 
 ; 通货列表（2列布局）
 currencyList := [
@@ -73,17 +103,22 @@ currencyList := [
     ["混沌石：", "CountHundun"],
     ["物品：", "CountWupin"]
 ]
-
-yPos := 595
-loop 5 {
+MyGui.Add("Text", "x200 y640 w70 h20", "当前物品：")
+MyGui.Add("Text", "x270 y640 w150 h20 vCountWupin", "")
+yPos := 660
+loop 3 {
     idx := A_Index
     ; 左列
     MyGui.Add("Text", "x30 y" yPos " w55 h20", currencyList[idx][1])
     MyGui.Add("Text", "x85 y" yPos " w50 h20 v" currencyList[idx][2], "0")
+    ;中列
+    MyGui.Add("Text", "x170 y" yPos " w55 h20", currencyList[idx + 3][1])
+    MyGui.Add("Text", "x225 y" yPos " w50 h20 v" currencyList[idx + 3][2], "0")
     ; 右列
-    MyGui.Add("Text", "x220 y" yPos " w55 h20", currencyList[idx + 5][1])
-    MyGui.Add("Text", "x275 y" yPos " w50 h20 v" currencyList[idx + 5][2], "0")
-    yPos += 22
+    MyGui.Add("Text", "x310 y" yPos " w55 h20", currencyList[idx + 6][1])
+    MyGui.Add("Text", "x365 y" yPos " w50 h20 v" currencyList[idx + 6][2], "0")
+
+    yPos += 20
 }
 
 ; ========== 按钮 ==========
@@ -185,14 +220,14 @@ UpdateCurrencyCount(name, value) {
 LoadAllConfig() {
     global CfgFile, MyGui
     ; 模块1: 前缀
-    Loop 3 {
+    Loop 4 {
         val := IniRead(CfgFile, "Prefix", "Check" A_Index, "0")
         MyGui["PrefixCheck" A_Index].Value := val
         val := IniRead(CfgFile, "Prefix", "Need" A_Index, "")
         MyGui["NeedsPrefix" A_Index].Value := val
     }
     ; 模块1: 后缀
-    Loop 3 {
+    Loop 4 {
         val := IniRead(CfgFile, "Suffix", "Check" A_Index, "0")
         MyGui["SuffixCheck" A_Index].Value := val
         val := IniRead(CfgFile, "Suffix", "Need" A_Index, "")
@@ -205,18 +240,27 @@ LoadAllConfig() {
         val := IniRead(CfgFile, "Modifiers", "Need" A_Index, "")
         MyGui["NeedsModifiers" A_Index].Value := val
     }
+    ; 模块3: 庄园
+    Loop 2 {
+        val := IniRead(CfgFile, "MustNeed", "Need" A_Index, "")
+        MyGui["MustNeed" A_Index].Value := val
+    }
+    Loop 4 {
+        val := IniRead(CfgFile, "Modifiersjh", "Need" A_Index, "")
+        MyGui["NeedsModifiersjh" A_Index].Value := val
+    }
 }
 
 ; 保存所有配置到ini文件
 SaveAllConfig(*) {
     global CfgFile, MyGui
     ; 模块1: 前缀
-    Loop 3 {
+    Loop 4 {
         IniWrite(MyGui["PrefixCheck" A_Index].Value, CfgFile, "Prefix", "Check" A_Index)
         IniWrite(MyGui["NeedsPrefix" A_Index].Value, CfgFile, "Prefix", "Need" A_Index)
     }
     ; 模块1: 后缀
-    Loop 3 {
+    Loop 4 {
         IniWrite(MyGui["SuffixCheck" A_Index].Value, CfgFile, "Suffix", "Check" A_Index)
         IniWrite(MyGui["NeedsSuffix" A_Index].Value, CfgFile, "Suffix", "Need" A_Index)
     }
@@ -224,6 +268,13 @@ SaveAllConfig(*) {
     Loop 6 {
         IniWrite(MyGui["ModCheck" A_Index].Value, CfgFile, "Modifiers", "Check" A_Index)
         IniWrite(MyGui["NeedsModifiers" A_Index].Value, CfgFile, "Modifiers", "Need" A_Index)
+    }
+    ; 模块3: 庄园
+    Loop 2 {
+        IniWrite(MyGui["MustNeed" A_Index].Value, CfgFile, "MustNeed", "Need" A_Index)
+    }
+    Loop 4 {
+        IniWrite(MyGui["NeedsModifiersjh" A_Index].Value, CfgFile, "Modifiersjh", "Need" A_Index)
     }
     ToolTip "配置已保存！"
     Sleep 1500
@@ -358,8 +409,7 @@ F2:: {
         
         A_Clipboard := ""
         Send "!^c" 
-        if !ClipWait(0.5)
-            continue
+        Sleep 100
             
         isMatched := false
         Loop 6 {
@@ -393,3 +443,145 @@ F3:: {
     Reload()
 }
 #HotIf
+
+; 改造-增幅-富豪逻辑
+F4:: {
+
+    Sleep 200
+    
+    MouseMove gaizao_x, gaizao_y
+    Sleep 150
+    Click("Right")
+    Sleep 150
+    
+    MouseMove wupin_x, wupin_y
+    Sleep 150
+    Send "{Shift down}"
+    Sleep 150
+
+    Loop {
+        Click() 
+        Sleep 100
+        
+        A_Clipboard := ""
+        matchCount := 0
+        matchCount_zengfu := 0
+        matchCount_fuhao := 0
+        isMatched := true
+        Send "!^c" 
+        Sleep 100
+            
+        Loop 4 {
+            ; 检查是否有符合的前缀
+            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
+                    matchCount++
+            }
+            ; 检查是否有符合的后缀
+            if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+                    matchCount++
+            }
+        }
+        if (matchCount = 0) 
+            continue
+
+        if (matchCount = 1) {
+            
+            if InStr(A_Clipboard,"前缀") && InStr(A_Clipboard,"后缀") {
+                isMatched := true
+            }else {
+                isMatched := false
+            }
+        }
+
+        if (matchCount = 1 && isMatched = true) 
+            continue
+; 使用增幅石
+        if (isMatched = false) {
+            A_Clipboard := ""
+            Send "{Alt down}"
+            Sleep 150
+            Click
+            Sleep 150
+            Send "{Alt up}"
+            Sleep 150
+            
+            Send "!^c"
+            Sleep 100
+
+            Loop 4 {
+
+            ; 检查是否有符合的前缀
+            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
+                    if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
+                        matchCount_zengfu++
+                }
+            ; 检查是否有符合的后缀
+                if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
+                    if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+                        matchCount_zengfu++
+                }
+            }
+        }
+
+        if (matchCount_zengfu >= 2 || matchCount = 2) {
+            A_Clipboard := ""
+            Send "{Shift up}"
+            MouseMove fuhao_x, fuhao_y
+            Click("Right")
+            Sleep 100
+            MouseMove wupin_x, wupin_y
+            Sleep 100
+            Click()
+            Send "!^c"
+            Sleep 100
+
+            
+            Loop 4 {
+
+            ; 检查是否有符合的前缀
+            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
+                    matchCount_fuhao++
+                }
+            ; 检查是否有符合的后缀
+            if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+                    matchCount_fuhao++
+                }
+            }
+        }
+        if (matchCount_fuhao >= 3) {
+            MsgBox("已洗出目标词缀！`n`n" A_Clipboard)
+            break
+        }else {
+            ; 使用重铸石
+            MouseMove chongzhu_x, chongzhu_y
+            Click("Right")
+            Sleep 100
+            MouseMove wupin_x, wupin_y
+            Sleep 100
+            Click()
+            ; 使用蜕变石
+            MouseMove tuibian_x, tuibian_y
+            Click("Right")
+            Sleep 100
+            MouseMove wupin_x, wupin_y
+            Sleep 100
+            Click()
+            ; 使用改造石
+            MouseMove gaizao_x, gaizao_y
+            Sleep 150
+            Click("Right")
+            Sleep 150
+    
+            MouseMove wupin_x, wupin_y
+            Sleep 150
+            Send "{Shift down}"
+            Sleep 150
+        }
+        
+        Sleep Random(150, 300)
+    }
+}
