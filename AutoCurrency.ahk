@@ -39,7 +39,7 @@ MyGui.MarginX := 15
 MyGui.MarginY := 10
 
 ; ========== 模块1: 改造-增幅-富豪-崇高 ==========
-MyGui.Add("GroupBox", "x15 y5 w410 h370", "改造-增幅-富豪-崇高")
+MyGui.Add("GroupBox", "x15 y5 w410 h370", "改造-增幅-富豪")
 
 ; Prefix 标签和输入框（带复选框）
 MyGui.Add("Text", "x35 y30 w80 h20", "前缀:")
@@ -394,22 +394,25 @@ F2:: {
     Sleep 200
     
     MouseMove gaizao_x, gaizao_y
-    Sleep 150
+    Sleep Random(300, 350)
     Click("Right")
-    Sleep 150
+    Sleep Random(300, 350)
     
     MouseMove wupin_x, wupin_y
-    Sleep 150
+    Sleep Random(300, 350)
     Send "{Shift down}"
-    Sleep 150
+    Sleep Random(300, 350)
 
     Loop {
         Click() 
-        Sleep 100
+        Sleep Random(300, 350)
         
         A_Clipboard := ""
         Send "!^c" 
-        Sleep 100
+        if !ClipWait(0.8) {
+                MsgBox("改造复制失败,被迫终止" )
+                break
+            }
             
         isMatched := false
         Loop 6 {
@@ -439,7 +442,7 @@ F3:: {
     SetTimer () => ToolTip(), -1000 
 
     SaveAllConfig()
-    Sleep 100
+    Sleep Random(300, 350)
     Reload()
 }
 #HotIf
@@ -450,18 +453,18 @@ F4:: {
     Sleep 200
     
     MouseMove gaizao_x, gaizao_y
-    Sleep 150
+    Sleep Random(300, 350)
     Click("Right")
-    Sleep 150
+    Sleep Random(300, 350)
     
     MouseMove wupin_x, wupin_y
-    Sleep 150
+    Sleep Random(300, 350)
     Send "{Shift down}"
-    Sleep 150
+    Sleep Random(300, 350)
 
     Loop {
         Click() 
-        Sleep 100
+        Sleep Random(300, 350)
         
         A_Clipboard := ""
         matchCount := 0
@@ -469,7 +472,10 @@ F4:: {
         matchCount_fuhao := 0
         isMatched := true
         Send "!^c" 
-        Sleep 100
+        if !ClipWait(0.8) {
+                MsgBox("改造复制失败,被迫终止" )
+                break
+            }
             
         Loop 4 {
             ; 检查是否有符合的前缀
@@ -486,29 +492,32 @@ F4:: {
         if (matchCount = 0) 
             continue
 
-        if (matchCount = 1) {
+        ; if (matchCount = 1) {
             
-            if InStr(A_Clipboard,"前缀") && InStr(A_Clipboard,"后缀") {
-                isMatched := true
-            }else {
-                isMatched := false
-            }
-        }
+        ;     if InStr(A_Clipboard,"前缀") && InStr(A_Clipboard,"后缀") {
+        ;         isMatched := true
+        ;     }else {
+        ;         isMatched := false
+        ;     }
+        ; }
 
-        if (matchCount = 1 && isMatched = true) 
-            continue
+        ; if (matchCount = 1 && isMatched = true) 
+        ;     continue
 ; 使用增幅石
-        if (isMatched = false) {
+        if (matchCount = 1) {
             A_Clipboard := ""
             Send "{Alt down}"
-            Sleep 150
+            Sleep Random(500, 600)
             Click
-            Sleep 150
+            Sleep Random(500, 600)
             Send "{Alt up}"
-            Sleep 150
+            Sleep Random(500, 600)
             
             Send "!^c"
-            Sleep 100
+            if !ClipWait(0.8) {
+                MsgBox("增幅复制失败,被迫终止" )
+                break
+            }
 
             Loop 4 {
 
@@ -525,19 +534,27 @@ F4:: {
             }
         }
 
+        ; if (matchCount_zengfu < 2) 
+        ;     continue
+
         if (matchCount_zengfu >= 2 || matchCount = 2) {
             A_Clipboard := ""
+            Sleep Random(300, 350)
             Send "{Shift up}"
+            Sleep Random(300, 350)
             MouseMove fuhao_x, fuhao_y
             Click("Right")
-            Sleep 100
+            Sleep Random(300, 350)
             MouseMove wupin_x, wupin_y
-            Sleep 100
+            Sleep Random(300, 350)
             Click()
+            Sleep Random(300, 350)
             Send "!^c"
-            Sleep 100
+            if !ClipWait(0.8) {
+                MsgBox("富豪复制失败,被迫终止" )
+                break
+            }
 
-            
             Loop 4 {
 
             ; 检查是否有符合的前缀
@@ -551,35 +568,38 @@ F4:: {
                     matchCount_fuhao++
                 }
             }
-        }
-        if (matchCount_fuhao >= 3) {
-            MsgBox("已洗出目标词缀！`n`n" A_Clipboard)
-            break
-        }else {
-            ; 使用重铸石
-            MouseMove chongzhu_x, chongzhu_y
-            Click("Right")
-            Sleep 100
-            MouseMove wupin_x, wupin_y
-            Sleep 100
-            Click()
-            ; 使用蜕变石
-            MouseMove tuibian_x, tuibian_y
-            Click("Right")
-            Sleep 100
-            MouseMove wupin_x, wupin_y
-            Sleep 100
-            Click()
-            ; 使用改造石
-            MouseMove gaizao_x, gaizao_y
-            Sleep 150
-            Click("Right")
-            Sleep 150
+
+            if (matchCount_fuhao >= 3) {
+                Send "{Shift up}"
+                MsgBox("已洗出目标词缀！`n`n" A_Clipboard)
+                break
+            }else {
+                ; 使用重铸石
+                MouseMove chongzhu_x, chongzhu_y
+                Click("Right")
+                Sleep Random(300, 350)
+                MouseMove wupin_x, wupin_y
+                Sleep Random(300, 350)
+                Click()
+                ; 使用蜕变石
+                MouseMove tuibian_x, tuibian_y
+                Click("Right")
+                Sleep Random(300, 350)
+                MouseMove wupin_x, wupin_y
+                Sleep Random(300, 350)
+                Click()
+                ; 使用改造石
+                MouseMove gaizao_x, gaizao_y
+                Sleep Random(300, 350)
+                Click("Right")
+                Sleep Random(300, 350)
     
-            MouseMove wupin_x, wupin_y
-            Sleep 150
-            Send "{Shift down}"
-            Sleep 150
+                MouseMove wupin_x, wupin_y
+                Sleep Random(300, 350)
+                Send "{Shift down}"
+                Sleep Random(300, 350)
+            }
+
         }
         
         Sleep Random(150, 300)
