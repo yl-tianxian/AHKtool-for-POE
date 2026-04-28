@@ -11,11 +11,12 @@ CfgFile := A_ScriptDir "\AutoCurrency_config.ini"
 ; --- GUI 界面 ---
 
 ; 模块1变量
-global PrefixCheck1 := 0, PrefixCheck2 := 0, PrefixCheck3 := 0, PrefixCheck4 := 0
-global NeedsPrefix1 := "", NeedsPrefix2 := "", NeedsPrefix3 := "", NeedsPrefix4 := ""
-
-global SuffixCheck1 := 0, SuffixCheck2 := 0, SuffixCheck3 := 0, SuffixCheck4 := 0
-global NeedsSuffix1 := "", NeedsSuffix2 := "", NeedsSuffix3 := "", NeedsSuffix4 := ""
+global ModeoneCheck1 := 0, ModeoneCheck2 := 0, ModeoneCheck3 := 0, ModeoneCheck4 := 0
+global ModeoneCheck5 := 0, ModeoneCheck6 := 0, ModeoneCheck7 := 0, ModeoneCheck8 := 0
+global ModeoneCheck9 := 0, ModeoneCheck10 := 0, ModeoneCheck11 := 0, ModeoneCheck12 := 0
+global NeedsModeone1 := "", NeedsModeone2 := "", NeedsModeone3 := "", NeedsModeone4 := ""
+global NeedsModeone5 := "", NeedsModeone6 := "", NeedsModeone7 := "", NeedsModeone8 := ""
+global NeedsModeone9 := "", NeedsModeone10 := "", NeedsModeone11 := "", NeedsModeone12 := ""
 
 ; 模块2变量
 global ModCheck1 := 0, ModCheck2 := 0, ModCheck3 := 0, ModCheck4 := 0, ModCheck5 := 0, ModCheck6 := 0
@@ -38,88 +39,99 @@ MyGui.SetFont("s10", "微软雅黑")
 MyGui.MarginX := 15
 MyGui.MarginY := 10
 
-; ========== 模块1: 改造-增幅-富豪-崇高 ==========
-MyGui.Add("GroupBox", "x15 y5 w410 h370", "改造-增幅-富豪")
+; ========== 模块1: 改造-增幅-富豪 ==========
+MyGui.Add("GroupBox", "x15 y5 w410 h450", "改造-增幅-富豪")
 
-; Prefix 标签和输入框（带复选框）
-MyGui.Add("Text", "x35 y30 w80 h20", "前缀:")
+; 模式选择CheckBox（互斥）
+MyGui.Add("Text", "x20 y30", "模式选择：")
+OneModifier := MyGui.Add("CheckBox", "x90 y30 w90 h20 vOneModifier", "满足任一词")
+OneModifier.Value := true  ; 默认选中"满足任一词"
+OneModifier.OnEvent("Click", OnModeCheckBoxClick)
+TwoModifiers := MyGui.Add("CheckBox", "x190 y30 w80 h20 vTwoModifiers", "改造增幅")
+TwoModifiers.OnEvent("Click", OnModeCheckBoxClick)
+ThreeModifiers := MyGui.Add("CheckBox", "x270 y30 w120 h20 vThreeModifiers", "改造增幅富豪")
+ThreeModifiers.OnEvent("Click", OnModeCheckBoxClick)
+
+; 目标词缀标签和输入框（带复选框）- 单列
 yPos := 60
-loop 4 {
-    MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vPrefixCheck" A_Index, "")
-    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsPrefix" A_Index, NeedsPrefix%A_Index%)
+loop 6 {
+    MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vModeoneCheck" A_Index, "")
+    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsModeone" A_Index, NeedsModeone%A_Index%)
     yPos += 30
 }
 
-; Suffix 标签和输入框（带复选框）
-MyGui.Add("Text", "x35 y190 w80 h20", "后缀:")
-yPos := 220
-loop 4 {
-    MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vSuffixCheck" A_Index, "")
-    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsSuffix" A_Index, NeedsSuffix%A_Index%)
+; 分隔文字
+MyGui.Add("Text", "x35 y" yPos " w360 h20 Center", "======上方前缀，下方后缀======")
+yPos += 25
+
+loop 6 {
+    idx := A_Index + 6
+    MyGui.Add("CheckBox", "x35 y" yPos " w18 h22 vModeoneCheck" idx, "")
+    MyGui.Add("Edit", "x60 y" yPos " w340 h26 vNeedsModeone" idx, NeedsModeone%idx%)
     yPos += 30
 }
 
-; ========== 模块2: 改造模式 ==========
-MyGui.Add("GroupBox", "x15 y385 w205 h250", "改造模式")
+; ========== 模块2: 精华模式 ==========
+MyGui.Add("GroupBox", "x15 y460 w205 h250", "精华模式")
 
 ; 6个带复选框的输入框
-yPos := 415
+yPos := 490
 loop 6 {
     MyGui.Add("CheckBox", "x25 y" yPos " w18 h22 vModCheck" A_Index, "")
     MyGui.Add("Edit", "x50 y" yPos " w160 h26 vNeedsModifiers" A_Index, NeedsModifiers%A_Index%)
     yPos += 30
 }
 
-; ========== 模块3: 精华or庄园 ==========
-MyGui.Add("GroupBox", "x220 y385 w205 h250", "庄园")
+; ========== 模块3: 庄园 ==========
+MyGui.Add("GroupBox", "x220 y460 w205 h250", "庄园")
 
-MyGui.AddText("x225 y425", "必要`n词缀:")
-MyGui.AddEdit("x260 y415 w140 h26 vMustNeed1", MustNeed1)
-MyGui.AddEdit("x260 y445 w140 h26 vMustNeed2", MustNeed2)
+MyGui.AddText("x225 y500", "必要`n词缀:")
+MyGui.AddEdit("x260 y490 w140 h26 vMustNeed1", MustNeed1)
+MyGui.AddEdit("x260 y520 w140 h26 vMustNeed2", MustNeed2)
 
 
-; 4个带复选框的输入框 
-MyGui.AddText("x225 y479 w80 h20", "次要词缀:")
-yPos := 505
+; 4个带复选框的输入框
+MyGui.AddText("x225 y555 w80 h20", "次要词缀:")
+yPos := 580
 loop 4 {
 
     MyGui.Add("Edit", "x260 y" yPos " w140 h26 vNeedsModifiersjh" A_Index, NeedsModifiersjh%A_Index%)
     yPos += 30
 }
 
-; ========== 模块4: 通货余额 ==========
-MyGui.Add("GroupBox", "x15 y640 w410 h85", "通货余额")
+; ; ========== 模块4: 通货余额 ==========
+; MyGui.Add("GroupBox", "x15 y640 w410 h85", "通货余额")
 
-; 通货列表（2列布局）
-currencyList := [
-    ["蜕变石：", "CountTuibian"],
-    ["富豪石：", "CountFuhao"],
-    ["剥离石：", "CountBolizhi"],
-    ["增幅石：", "CountZengfu"],
-    ["改造石：", "CountGaizao"],
-    ["崇高石：", "CountChonggao"],
-    ["点金石：", "CountDianjin"],
-    ["重铸石：", "CountChongzhu"],
-    ["混沌石：", "CountHundun"],
-    ["物品：", "CountWupin"]
-]
-MyGui.Add("Text", "x200 y640 w70 h20", "当前物品：")
-MyGui.Add("Text", "x270 y640 w150 h20 vCountWupin", "")
-yPos := 660
-loop 3 {
-    idx := A_Index
-    ; 左列
-    MyGui.Add("Text", "x30 y" yPos " w55 h20", currencyList[idx][1])
-    MyGui.Add("Text", "x85 y" yPos " w50 h20 v" currencyList[idx][2], "0")
-    ;中列
-    MyGui.Add("Text", "x170 y" yPos " w55 h20", currencyList[idx + 3][1])
-    MyGui.Add("Text", "x225 y" yPos " w50 h20 v" currencyList[idx + 3][2], "0")
-    ; 右列
-    MyGui.Add("Text", "x310 y" yPos " w55 h20", currencyList[idx + 6][1])
-    MyGui.Add("Text", "x365 y" yPos " w50 h20 v" currencyList[idx + 6][2], "0")
+; ; 通货列表（2列布局）
+; currencyList := [
+;     ["蜕变石：", "CountTuibian"],
+;     ["富豪石：", "CountFuhao"],
+;     ["剥离石：", "CountBolizhi"],
+;     ["增幅石：", "CountZengfu"],
+;     ["改造石：", "CountGaizao"],
+;     ["崇高石：", "CountChonggao"],
+;     ["点金石：", "CountDianjin"],
+;     ["重铸石：", "CountChongzhu"],
+;     ["混沌石：", "CountHundun"],
+;     ["物品：", "CountWupin"]
+; ]
+; MyGui.Add("Text", "x200 y640 w70 h20", "当前物品：")
+; MyGui.Add("Text", "x270 y640 w150 h20 vCountWupin", "")
+; yPos := 660
+; loop 3 {
+;     idx := A_Index
+;     ; 左列
+;     MyGui.Add("Text", "x30 y" yPos " w55 h20", currencyList[idx][1])
+;     MyGui.Add("Text", "x85 y" yPos " w50 h20 v" currencyList[idx][2], "0")
+;     ;中列
+;     MyGui.Add("Text", "x170 y" yPos " w55 h20", currencyList[idx + 3][1])
+;     MyGui.Add("Text", "x225 y" yPos " w50 h20 v" currencyList[idx + 3][2], "0")
+;     ; 右列
+;     MyGui.Add("Text", "x310 y" yPos " w55 h20", currencyList[idx + 6][1])
+;     MyGui.Add("Text", "x365 y" yPos " w50 h20 v" currencyList[idx + 6][2], "0")
 
-    yPos += 20
-}
+;     yPos += 20
+; }
 
 ; ========== 按钮 ==========
 getCoordsBtn := MyGui.Add("Button", "x30 y725 w100 h30", "自动获取通货坐标")
@@ -131,6 +143,32 @@ saveBtn.OnEvent("Click", SaveAllConfig)
 ; 调试按钮
 debugBtn := MyGui.Add("Button", "x380 y725 w80 h30", "调试")
 debugBtn.OnEvent("Click", DebugShowAll)
+
+; ========== 互斥CheckBox事件处理 ==========
+OnModeCheckBoxClick(CheckBoxCtrl, *) {
+    global OneModifier, TwoModifiers, ThreeModifiers
+    
+    ; 检查是否至少有1个被选中
+    if !OneModifier.Value && !TwoModifiers.Value && !ThreeModifiers.Value {
+        ; 如果全部未选中，则恢复当前点击的CheckBox为选中状态
+        CheckBoxCtrl.Value := true
+        return
+    }
+    
+    ; 获取当前点击的CheckBox
+    if (CheckBoxCtrl == OneModifier && OneModifier.Value) {
+        TwoModifiers.Value := false
+        ThreeModifiers.Value := false
+    }
+    else if (CheckBoxCtrl == TwoModifiers && TwoModifiers.Value) {
+        OneModifier.Value := false
+        ThreeModifiers.Value := false
+    }
+    else if (CheckBoxCtrl == ThreeModifiers && ThreeModifiers.Value) {
+        OneModifier.Value := false
+        TwoModifiers.Value := false
+    }
+}
 
 ; 显示窗口
 MyGui.Show("w440 h770")
@@ -219,19 +257,12 @@ UpdateCurrencyCount(name, value) {
 ; 从配置文件加载所有设置
 LoadAllConfig() {
     global CfgFile, MyGui
-    ; 模块1: 前缀
-    Loop 4 {
-        val := IniRead(CfgFile, "Prefix", "Check" A_Index, "0")
-        MyGui["PrefixCheck" A_Index].Value := val
-        val := IniRead(CfgFile, "Prefix", "Need" A_Index, "")
-        MyGui["NeedsPrefix" A_Index].Value := val
-    }
-    ; 模块1: 后缀
-    Loop 4 {
-        val := IniRead(CfgFile, "Suffix", "Check" A_Index, "0")
-        MyGui["SuffixCheck" A_Index].Value := val
-        val := IniRead(CfgFile, "Suffix", "Need" A_Index, "")
-        MyGui["NeedsSuffix" A_Index].Value := val
+    ; 模块1: 目标词缀
+    Loop 12 {
+        val := IniRead(CfgFile, "Modeone", "Check" A_Index, "0")
+        MyGui["ModeoneCheck" A_Index].Value := val
+        val := IniRead(CfgFile, "Modeone", "Need" A_Index, "")
+        MyGui["NeedsModeone" A_Index].Value := val
     }
     ; 模块2: 改造模式
     Loop 6 {
@@ -254,15 +285,10 @@ LoadAllConfig() {
 ; 保存所有配置到ini文件
 SaveAllConfig(*) {
     global CfgFile, MyGui
-    ; 模块1: 前缀
-    Loop 4 {
-        IniWrite(MyGui["PrefixCheck" A_Index].Value, CfgFile, "Prefix", "Check" A_Index)
-        IniWrite(MyGui["NeedsPrefix" A_Index].Value, CfgFile, "Prefix", "Need" A_Index)
-    }
-    ; 模块1: 后缀
-    Loop 4 {
-        IniWrite(MyGui["SuffixCheck" A_Index].Value, CfgFile, "Suffix", "Check" A_Index)
-        IniWrite(MyGui["NeedsSuffix" A_Index].Value, CfgFile, "Suffix", "Need" A_Index)
+    ; 模块1: 目标词缀
+    Loop 12 {
+        IniWrite(MyGui["ModeoneCheck" A_Index].Value, CfgFile, "Modeone", "Check" A_Index)
+        IniWrite(MyGui["NeedsModeone" A_Index].Value, CfgFile, "Modeone", "Need" A_Index)
     }
     ; 模块2: 改造模式
     Loop 6 {
@@ -293,19 +319,11 @@ DebugShowAll(*) {
     ; 构建调试信息
     info := "========== 调试信息 ==========`n`n"
     
-    ; 模块1: 前缀
-    info .= "【前缀词缀】`n"
-    Loop 3 {
-        chk := MyGui["PrefixCheck" A_Index].Value ? "√" : "□"
-        txt := MyGui["NeedsPrefix" A_Index].Value
-        info .= A_Index ": " chk " " txt "`n"
-    }
-    
-    ; 模块1: 后缀
-    info .= "`n【后缀词缀】`n"
-    Loop 3 {
-        chk := MyGui["SuffixCheck" A_Index].Value ? "√" : "□"
-        txt := MyGui["NeedsSuffix" A_Index].Value
+    ; 模块1: 目标词缀
+    info .= "【目标词缀】`n"
+    Loop 12 {
+        chk := MyGui["ModeoneCheck" A_Index].Value ? "√" : "□"
+        txt := MyGui["NeedsModeone" A_Index].Value
         info .= A_Index ": " chk " " txt "`n"
     }
     
@@ -473,23 +491,18 @@ F4:: {
         isMatched := true
         Send "!^c" 
         if !ClipWait(0.8) {
-                MsgBox("改造复制失败,被迫终止" )
+                MsgBox("改造结果复制失败,被迫终止" )
                 break
             }
-            
-        Loop 4 {
-            ; 检查是否有符合的前缀
-            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
-                if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
-                    matchCount++
-            }
-            ; 检查是否有符合的后缀
-            if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
-                if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+
+        Loop 12 {
+            ; 检查是否有符合的目标词缀
+            if (MyGui["ModeoneCheck" A_Index].Value && MyGui["NeedsModeone" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsModeone" A_Index].Value)
                     matchCount++
             }
         }
-        if (matchCount = 0) 
+        if (matchCount = 0)
             continue
 
         ; if (matchCount = 1) {
@@ -515,20 +528,14 @@ F4:: {
             
             Send "!^c"
             if !ClipWait(0.8) {
-                MsgBox("增幅复制失败,被迫终止" )
+                MsgBox("增幅结果复制失败,被迫终止" )
                 break
             }
 
-            Loop 4 {
-
-            ; 检查是否有符合的前缀
-            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
-                    if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
-                        matchCount_zengfu++
-                }
-            ; 检查是否有符合的后缀
-                if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
-                    if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+            Loop 12 {
+            ; 检查是否有符合的目标词缀
+            if (MyGui["ModeoneCheck" A_Index].Value && MyGui["NeedsModeone" A_Index].Value != "") {
+                    if InStr(A_Clipboard, MyGui["NeedsModeone" A_Index].Value)
                         matchCount_zengfu++
                 }
             }
@@ -551,20 +558,14 @@ F4:: {
             Sleep Random(300, 350)
             Send "!^c"
             if !ClipWait(0.8) {
-                MsgBox("富豪复制失败,被迫终止" )
+                MsgBox("富豪结果复制失败,被迫终止" )
                 break
             }
 
-            Loop 4 {
-
-            ; 检查是否有符合的前缀
-            if (MyGui["PrefixCheck" A_Index].Value && MyGui["NeedsPrefix" A_Index].Value != "") {
-                if InStr(A_Clipboard, MyGui["NeedsPrefix" A_Index].Value)
-                    matchCount_fuhao++
-                }
-            ; 检查是否有符合的后缀
-            if (MyGui["SuffixCheck" A_Index].Value && MyGui["NeedsSuffix" A_Index].Value != "") {
-                if InStr(A_Clipboard, MyGui["NeedsSuffix" A_Index].Value)
+            Loop 12 {
+            ; 检查是否有符合的目标词缀
+            if (MyGui["ModeoneCheck" A_Index].Value && MyGui["NeedsModeone" A_Index].Value != "") {
+                if InStr(A_Clipboard, MyGui["NeedsModeone" A_Index].Value)
                     matchCount_fuhao++
                 }
             }
