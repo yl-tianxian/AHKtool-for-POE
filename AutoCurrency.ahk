@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 
 ; 调试重启用，编译前注释掉！！！！！！！
-F5:: {
+F6:: {
     Sleep 50
     Reload()
 }
@@ -40,7 +40,7 @@ MyGui.MarginX := 15
 MyGui.MarginY := 10
 
 ; ========== 模块1: 改造-增幅-富豪 ==========
-MyGui.Add("GroupBox", "x15 y5 w410 h450", "改造-增幅-富豪")
+MyGui.Add("GroupBox", "x15 y5 w410 h450", "改造-增幅-富豪====F2开洗  F3停止重启")
 
 ; 模式选择CheckBox（互斥）
 MyGui.Add("Text", "x20 y30", "模式选择：")
@@ -72,7 +72,7 @@ loop 6 {
 }
 
 ; ========== 模块2: 精华模式 ==========
-MyGui.Add("GroupBox", "x15 y460 w205 h250", "精华模式")
+MyGui.Add("GroupBox", "x15 y460 w205 h250", "精华====F4开洗  F3停止")
 
 ; 6个带复选框的输入框
 yPos := 490
@@ -83,7 +83,7 @@ loop 6 {
 }
 
 ; ========== 模块3: 庄园 ==========
-MyGui.Add("GroupBox", "x220 y460 w205 h250", "庄园")
+MyGui.Add("GroupBox", "x220 y460 w205 h250", "庄园====F5开洗  F3停止")
 
 MyGui.AddText("x225 y500", "必要`n词缀:")
 MyGui.AddEdit("x260 y490 w140 h26 vMustNeed1", MustNeed1)
@@ -203,6 +203,7 @@ global wupin_x,   wupin_y
 
 ; 缩放比例
 global scaleFactor := 1
+getdpi := 0
 
 
 ; --- 使用示例 ---
@@ -236,6 +237,10 @@ OnGetCoordsBtn(*) {
     global zengfu_x   := Round(zengfu_x0   * scaleFactor), zengfu_y   := Round(zengfu_y0   * scaleFactor)
     global chongzhu_x := Round(chongzhu_x0 * scaleFactor), chongzhu_y := Round(chongzhu_y0 * scaleFactor)
     global wupin_x    := Round(wupin_x0    * scaleFactor), wupin_y    := Round(wupin_y0    * scaleFactor)
+
+    getdpi     := Round(getdpi      + scaleFactor)
+
+
     
     ToolTip "已获取窗口坐标！`n分辨率: " PoeW "x" PoeH "`n缩放因子: " scaleFactor
     Sleep 2000
@@ -257,14 +262,14 @@ UpdateCurrencyCount(name, value) {
 ; 从配置文件加载所有设置
 LoadAllConfig() {
     global CfgFile, MyGui
-    ; 模块1: 目标词缀
+    ; 模块1: 改造-增幅-富豪
     Loop 12 {
         val := IniRead(CfgFile, "Modeone", "Check" A_Index, "0")
         MyGui["ModeoneCheck" A_Index].Value := val
         val := IniRead(CfgFile, "Modeone", "Need" A_Index, "")
         MyGui["NeedsModeone" A_Index].Value := val
     }
-    ; 模块2: 改造模式
+    ; 模块2: 精华模式
     Loop 6 {
         val := IniRead(CfgFile, "Modifiers", "Check" A_Index, "0")
         MyGui["ModCheck" A_Index].Value := val
@@ -285,12 +290,12 @@ LoadAllConfig() {
 ; 保存所有配置到ini文件
 SaveAllConfig(*) {
     global CfgFile, MyGui
-    ; 模块1: 目标词缀
+    ; 模块1: 改造-增幅-富豪
     Loop 12 {
         IniWrite(MyGui["ModeoneCheck" A_Index].Value, CfgFile, "Modeone", "Check" A_Index)
         IniWrite(MyGui["NeedsModeone" A_Index].Value, CfgFile, "Modeone", "Need" A_Index)
     }
-    ; 模块2: 改造模式
+    ; 模块2: 精华模式
     Loop 6 {
         IniWrite(MyGui["ModCheck" A_Index].Value, CfgFile, "Modifiers", "Check" A_Index)
         IniWrite(MyGui["NeedsModifiers" A_Index].Value, CfgFile, "Modifiers", "Need" A_Index)
@@ -319,7 +324,7 @@ DebugShowAll(*) {
     ; 构建调试信息
     info := "========== 调试信息 ==========`n`n"
     
-    ; 模块1: 目标词缀
+    ; 模块1: 改造-增幅-富豪
     info .= "【目标词缀】`n"
     Loop 12 {
         chk := MyGui["ModeoneCheck" A_Index].Value ? "√" : "□"
@@ -327,7 +332,7 @@ DebugShowAll(*) {
         info .= A_Index ": " chk " " txt "`n"
     }
     
-    ; 模块2: 改造模式
+    ; 模块2: 精华模式
     info .= "`n【改造模式词缀】`n"
     Loop 6 {
         chk := MyGui["ModCheck" A_Index].Value ? "√" : "□"
@@ -406,8 +411,8 @@ F1::{
 }
 
 #HotIf WinActive("流放之路") or WinActive("Path of Exile")
-; 单改造核心逻辑
-F2:: {
+; 精华核心逻辑
+F4:: {
 
     Sleep 200
     
@@ -451,22 +456,27 @@ F2:: {
         Sleep Random(150, 300)
     }
 }
+#HotIf
 
 ; 【停止/重置】逻辑
 +F3:: 
 F3:: {
     Send "{Shift up}" 
     ToolTip("♻ 正在保存配置并重置...")
-    SetTimer () => ToolTip(), -1000 
+    SetTimer () => ToolTip(), -500
 
     SaveAllConfig()
-    Sleep Random(300, 350)
+    Sleep Random(100, 150)
     Reload()
 }
-#HotIf
+
 
 ; 改造-增幅-富豪逻辑
-F4:: {
+F2:: {
+    if (getdpi = 0) {
+        MsgBox("请先点击「自动获取通货坐标」按钮！" )
+        return
+    }
 
     Sleep 200
     
@@ -502,8 +512,14 @@ F4:: {
                     matchCount++
             }
         }
-        if (matchCount = 0)
+        if (matchCount = 0){
             continue
+        }else if (OneModifier.Value) {
+            Send "{Shift up}"
+            MsgBox("改造模式`n`n已洗出目标词缀！`n" A_Clipboard)
+            break
+        }
+            
 
         ; if (matchCount = 1) {
             
@@ -516,6 +532,12 @@ F4:: {
 
         ; if (matchCount = 1 && isMatched = true) 
         ;     continue
+
+        ; if (OneModifier.Value) {
+        ;     Send "{Shift up}"
+        ;     MsgBox("改造模式`n`n已洗出目标词缀！`n" A_Clipboard)
+        ;     break
+        ; }
 ; 使用增幅石
         if (matchCount = 1) {
             A_Clipboard := ""
@@ -545,6 +567,11 @@ F4:: {
         ;     continue
 
         if (matchCount_zengfu >= 2 || matchCount = 2) {
+            if (TwoModifiers.Value) {
+            Send "{Shift up}"
+            MsgBox("改造增幅模式`n`n已洗出目标词缀！`n" A_Clipboard)
+            break
+        }
             A_Clipboard := ""
             Sleep Random(300, 350)
             Send "{Shift up}"
@@ -572,7 +599,7 @@ F4:: {
 
             if (matchCount_fuhao >= 3) {
                 Send "{Shift up}"
-                MsgBox("已洗出目标词缀！`n`n" A_Clipboard)
+                MsgBox("改造增幅富豪模式`n`n已洗出目标词缀！`n`n" A_Clipboard)
                 break
             }else {
                 ; 使用重铸石
